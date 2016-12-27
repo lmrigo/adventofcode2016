@@ -4,8 +4,14 @@ var input = [
   '3 4 5',
   '5 5 10',
   `6 7 8
-   45 2 17
+   45 2 7
    12 10 9`,
+`101 301 501
+102 302 502
+103 303 503
+201 401 601
+202 402 602
+203 403 603`,
 `  775  785  361
   622  375  125
   297  839  375
@@ -1941,7 +1947,7 @@ var day3 = function() {
         impossibleTriangles++
       }
     }
-    console.log(possibleTriangles, impossibleTriangles, ((possibleTriangles+impossibleTriangles)==triangles.length))
+    //console.log(possibleTriangles, impossibleTriangles, ((possibleTriangles+impossibleTriangles)==triangles.length))
     $('#day3').append(input[i])
       .append('<br>&emsp;')
       .append(possibleTriangles)
@@ -1950,12 +1956,37 @@ var day3 = function() {
 }
 
 var day3part2 = function() {
-/*
+  for (var i = 0; i < input.length; i++) {
+    var possibleTriangles = 0
+    var impossibleTriangles = 0
+
+    var triangles = input[i].split(/\n/)
+    if (triangles.length < 3) continue;
+    for (var j = 0; j < triangles.length; j=j+3) {
+      var cols = 3
+      var triads = []
+      for (var k = 0; k < cols; k++) {
+        var triad = triangles[j+k].trim().split(/\s+/)
+        triads.push(triad)
+        //console.log(triad)
+      }
+      for (var k = 0; k < cols; k++) {
+        var a = new Number(triads[0][k])
+        var b = new Number(triads[1][k])
+        var c = new Number(triads[2][k])
+        if (a+b > c && a+c > b && b+c > a) {
+          possibleTriangles++
+        } else {
+          impossibleTriangles++
+        }
+      }
+    }
+    //console.log(possibleTriangles, impossibleTriangles, ((possibleTriangles+impossibleTriangles)==triangles.length))
     $('#day3part2').append(input[i])
       .append('<br>&emsp;')
-      .append(digits)
+      .append(possibleTriangles)
       .append('<br>')
-*/
+  }
 }
 
 $(function (){
