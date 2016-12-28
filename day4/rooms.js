@@ -961,7 +961,7 @@ not-a-real-room-404[oarel]
 totally-real-room-200[decoy]`,
   puzzleInput
 ]
-var day3 = function() {
+var day4 = function() {
   for (var i = 0; i < input.length; i++) {
     var sumOfRealSectors = 0
 
@@ -993,14 +993,14 @@ var day3 = function() {
     }
 
     // console.log(sumOfRealSectors)
-    $('#day3').append(input[i])
+    $('#day4').append(input[i])
       .append('<br>&emsp;')
       .append(sumOfRealSectors)
       .append('<br>')
   }
 }
 
-var day3part2 = function() {
+var day4part2 = function() {
   for (var i = 0; i < input.length; i++) {
     var realRooms = []
     var northPoleSector
@@ -1054,7 +1054,7 @@ var day3part2 = function() {
       }
     }
 
-    $('#day3part2').append(input[i])
+    $('#day4part2').append(input[i])
       .append('<br>&emsp;')
       .append(realRooms)
       .append('<br>&emsp;')
@@ -1065,10 +1065,10 @@ var day3part2 = function() {
 }
 
 $(function (){
-  $('#main').append('<div id="day3"><h2>day #3</h2></div>')
-  day3()
-  $('#main').append('<br><div id="day3part2"><h2>day #3 part 2</h2></div>')
-  day3part2()
+  $('#main').append('<div id="day4"><h2>day #4</h2></div>')
+  day4()
+  $('#main').append('<br><div id="day4part2"><h2>day #4 part 2</h2></div>')
+  day4part2()
   $('#main').append('<br>')
 })
 
