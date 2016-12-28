@@ -5,13 +5,18 @@ var input = [
 var day5 = function() {
 
   for (var i = 0; i < input.length; i++) {
-    var hash = md5(input[i])
-    console.log(hash)
-
-    // console.log(sumOfRealSectors)
+    var password = ''
+    var prefix = input[i]
+    var index = 0
+    while (password.length < 8) {
+      var hash = ''
+      while (!hash.startsWith('00000')) hash = md5(prefix + index++)
+      password += hash.charAt(5)
+      // console.log(password, index-1, hash)
+    }
     $('#day5').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(password)
       .append('<br>')
   }
 }
