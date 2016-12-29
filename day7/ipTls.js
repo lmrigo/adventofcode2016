@@ -9,7 +9,14 @@ var input = [
 abcd[bddb]xyyx
 aaaa[qwer]tyui
 ioxxoj[asdfgh]zxcvbn`,
-  puzzleInput
+  'aba[bab]xyz',
+  'xyx[xyx]xyx',
+`aba[bab]xyz
+xyx[xyx]xyx
+aaa[kek]eke
+zazbz[bzb]cdb`,
+ 'svnwxhhzpzjecgsunv[ucxaxltvfvvbbkx]gdnxojirnewoxul[ynqqsklepjplpzdf]uchlwfjpjvdmmzqn[vgmpooqwxgbtxnb]vicbdsabgheloshq',
+ puzzleInput
  ]
 
  var day7 = function() {
@@ -57,11 +64,62 @@ ioxxoj[asdfgh]zxcvbn`,
 
 var day7part2 = function() {
 
+  var supportsSsl = function (ip) {
+    var normalSections = []
+    var bracketSections = []
+    $.each(ip.split(/(\[\w+\])/), function (idx, elem) {
+      if (elem.startsWith('[')) {
+        bracketSections.push(elem)
+      } else {
+        normalSections.push(elem)
+      }
+    })
+    // console.log(normalSections, bracketSections)
+
+    var checkBab = function (a, b) {
+      var foundBab = false
+      for (var i = 0; i < bracketSections.length; i++) {
+        var sec = bracketSections[i]
+        for (var j = 0; j < sec.length-2; j++) {
+          // check for bab inside bracket
+          if (sec.charAt(j) == b
+            && sec.charAt(j+1) == a
+            && sec.charAt(j+2) == b) {
+            foundBab = true
+            break
+          }
+        }
+        if (foundBab) break;
+      }
+      return foundBab
+    }
+
+    var foundAbaBab = false
+    for (var i = 0; i < normalSections.length; i++) {
+      var sec = normalSections[i]
+      for (var j = 0; j < sec.length-2; j++) {
+        // check for aba outside bracket
+        if (sec.charAt(j) == sec.charAt(j+2)
+          && sec.charAt(j) != sec.charAt(j+1)) {
+          foundAbaBab = checkBab(sec.charAt(j), sec.charAt(j+1))
+          if (foundAbaBab) break;
+        }
+      }
+      if (foundAbaBab) break;
+    }
+    return foundAbaBab
+  }
+
   for (var i = 0; i < input.length; i++) {
-    var tlsCount
+    var sslCount = 0
+    var ips = input[i].split(/\n/)
+    for (var j = 0; j < ips.length; j++) {
+      if (supportsSsl(ips[j])) sslCount++
+    }
+
     $('#day7part2').append(input[i])
       .append('<br>&emsp;')
-      .append(tlsCount)
+      .append(sslCount)
       .append('<br>')
   }
 
