@@ -681,10 +681,32 @@ var day6 = function() {
 
 var day6part2 = function() {
 
-
   for (var i = 0; i < input.length; i++) {
     var message = ''
-
+    // count
+    var counter = []
+    var countChar = function (arr, ch, pos) {
+      arr[pos][ch] !== undefined ? arr[pos][ch]++ : arr[pos][ch] = 0
+    }
+    var repetitions = input[i].split(/\n/)
+    for (var j = 0; j < repetitions.length; j++) {
+      var word = repetitions[j]
+      for (var k = 0; k < word.length; k++) {
+        if (counter[k] === undefined) counter[k] = {}
+        countChar(counter, word.charAt(k), k)
+      }
+    }
+    // console.log(counter)
+    // find min
+    for (var l = 0; l < counter.length; l++) {
+      counter[l][''] = Number.MAX_SAFE_INTEGER
+      var min = Object.keys(counter[l]).reduce(function(accum, val) {
+        if (counter[l][val] < counter[l][accum]) return val
+        else return accum
+      }, '')
+      message += min
+    }
+    // console.log(message)
     $('#day6part2').append(input[i])
       .append('<br>&emsp;')
       .append(message)
