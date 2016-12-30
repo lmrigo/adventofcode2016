@@ -6,6 +6,8 @@ var input = [
   'A(2x2)BCD(2x2)EFG',
   '(6x1)(1x3)A',
   'X(8x2)(3x3)ABCY',
+  '(27x12)(20x12)(13x14)(7x10)(1x12)A',
+  '(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN',
   puzzleInput
  ]
 
@@ -51,12 +53,51 @@ var input = [
   }
 }
 
+var expandSection = function (section) {
+  var length = 0
+  for (var i = 0; i < section.length; i++) {
+    var ch = section.charAt(i)
+    if (ch != '(') {
+      length++
+    } else {
+      var copyLength = ''
+      var nextCh = section.charAt(++i)
+      do {
+        copyLength += nextCh
+        nextCh = section.charAt(++i)
+      } while (nextCh != 'x')
+
+      var copyTimes = ''
+      nextCh = section.charAt(++i)
+      do {
+        copyTimes += nextCh
+        nextCh = section.charAt(++i)
+      } while (nextCh != ')')
+
+      // count decompression
+      copyLength = Number(copyLength)
+      copyTimes = Number(copyTimes)
+
+      var subSection = section.substr(++i, copyLength)
+      // console.log(section, subSection)
+      length += expandSection(subSection) * copyTimes
+
+      i += copyLength-1
+    }
+  }
+  return length
+}
+
 var day9part2 = function() {
 
   for (var i = 0; i < input.length; i++) {
+
+    var compressed = input[i].replace(/\s/g, '')
+    var length = expandSection(compressed)
+
     $('#day9part2').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(length)
       .append('<br>')
   }
 
