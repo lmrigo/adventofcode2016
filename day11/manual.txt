@@ -1,0 +1,24 @@
+F4 .  .   .   .   .   .   .   .   .   .   .
+F3 .  .   .   .   CoM .   CuM .   RuM .   PlM
+F2 .  .   .   CoG .   CuG .   RuG .   PlG .
+F1 E  PrG PrM .   .   .   .   .   .   .   .
+
+F4 .   .   .   .   .   .   .   .   .   .   .
+F3 .   .   .   .   CoM .   CuM .   RuM .   PlM
+F2 E   PrG PrM CoG .   CuG .   RuG .   PlG .
+F1 .   .   .   .   .   .   .   .   .   .   .
+
+F4 .   .   .   .   .   .   .   .   .   .   .
+F3 E   .   PrM .   CoM .   CuM .   RuM .   PlM
+F2 .   PrG .   CoG .   CuG .   RuG .   PlG .
+F1 .   .   .   .   .   .   .   .   .   .   .
+
+F4 .   .   .   .   .   .   .   .   .   .   .
+F3 .   .   .   .   .   .   CuM .   RuM .   PlM
+F2 E   PrG PrM CoG CoM CuG .   RuG .   PlG .
+F1 .   .   .   .   .   .   .   .   .   .   .
+
+F4 .   .   .   .   .   .   .   .   .   .   .
+F3 E   .   .   .   CoM .   CuM .   RuM .   PlM
+F2 .   PrG PrM CoG .   CuG .   RuG .   PlG .
+F1 .   .   .   .   .   .   .   .   .   .   .

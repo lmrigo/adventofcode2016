@@ -10,7 +10,7 @@ The fourth floor contains nothing relevant.`,
  var day11 = function() {
 
   for (var i = 0; i < input.length; i++) {
-    var steps = 0
+    var minSteps = Number.MAX_SAFE_INTEGER
     var ignoreWords = ['The', 'first', 'second', 'third', 'fourth', 'floor', 'contains', 'a', 'and', '', 'nothing', 'relevant']
     var floorsInputs = input[i].split(/\n/)
     var floors = []
@@ -39,97 +39,196 @@ The fourth floor contains nothing relevant.`,
       var str = ''
       for (var fi = floors.length - 1; fi >= 0; fi--) {
         for (var ei = 0; ei < floors[fi].length; ei++) {
-          str += floors[fi][ei] + ' . '
+          str += floors[fi][ei] + ' '
         }
         str += '\n'
       }
       console.log(str)
     }
-    printFloors(floors)
+    // printFloors(floors)
 
-    var checkPair = function(floor) {
-      var pair = false
-      if (floor.length > 1) {
-        for (var e1 = 0; e1 < floor.length; e1++) {
-          for (var e2 = e1+1; e2 < floor.length; e2++) {
-            if (floor[e1].substr(1) == floor[e2].substr(1)) {
-              pair = floor[e1].substr(1)
-              break
-            }
-          }
-          if (pair) {
-            break
-          }
-        }
-      }
-      return pair
-    }
-    var chipGenMatch = function(elem, floor) {
-      var element = elem.substr(1)
-      var match = floor.find(function(e) {
-        return e.substr(1) == element
+    var cloneState = function(state) {
+      var newState = {floors: [], steps: 0}
+      $.each(state.floors, function(idx, elem) {
+        var newFloor = []
+        $.each(elem, function(idx2, elem2) {
+          newFloor.push(elem2)
+        })
+        newState.floors.push(newFloor)
       })
-      return match
+      newState.steps = state.steps
+      return newState
     }
 
-    var allLengths = floors.reduce(function (accum, val) {
-      return accum + val.length
-    }, 0)
-    while (floors[3].length < allLengths && steps < 1000000) {
-      for (var j = 0; j < floors.length; j++) {
-        var eIdx = floors[j].indexOf(elevator)
-        if (eIdx >= 0) {
-          floors[j].splice(eIdx, 1)
-          var moved = false
-          var pair = checkPair(floors[j])
-          if (j < 3 && pair) {
-            var a = floors[j].indexOf('M'+pair)
-            a = floors[j].splice(a, 1)[0]
-            var b = floors[j].indexOf('G'+pair)
-            b = floors[j].splice(b, 1)[0]
-            floors[j+1].push(a, b, elevator)
-            moved = true
+    var move = function(floorA, floorB, elem1, elem2) {
+        floorA.splice(floorA.indexOf('E'), 1)
+        floorA.splice(floorA.indexOf(elem1), 1)
+        if (elem2) { floorA.splice(floorA.indexOf(elem), 1) }
+        floorB.push('E')
+        floorB.push(elem1)
+        if (elem2) { floorB.push(elem2) }
+    }
+
+    var generate1ElemMoves = function(state, elevFloorIdx, up) {
+      var newMoves = []
+      var dir = up ? 1 : -1
+      for (var i = 0; i < state.floors[elevFloorIdx].length; i++) {
+        if (state.floors[elevFloorIdx][i] == 'E') { continue }
+        var newState = cloneState(state)
+        newState.steps = state.steps + 1
+        move(newState.floors[elevFloorIdx], newState.floors[elevFloorIdx+dir], newState.floors[elevFloorIdx][i])
+        newMoves.push(newState)
+      }
+      return newMoves
+    }
+
+    var generate2ElemMoves = function(state, elevFloorIdx, up) {
+      var newMoves = []
+      var dir = up ? 1 : -1
+      for (var e1 = 0; e1 < state.floors[elevFloorIdx].length; e1++) {
+        if (state.floors[elevFloorIdx][e1] == 'E') { continue }
+        for (var e2 = e1+1; e2 < state.floors[elevFloorIdx].length; e2++) {
+          if (state.floors[elevFloorIdx][e2] == 'E') { continue }
+          var newState = cloneState(state)
+          newState.steps = state.steps + 1
+          move(newState.floors[elevFloorIdx], newState.floors[elevFloorIdx+dir],
+                newState.floors[elevFloorIdx][e1], newState.floors[elevFloorIdx][e2])
+          newMoves.push(newState)
+        }
+      }
+      return newMoves
+    }
+
+    var generateMoves = function(state) {
+      var moves = []
+      var elevFloorIdx = state.floors.findIndex(function(e) {
+        return e.includes('E')
+      })
+      var upStates = elevFloorIdx < 3
+      var downStates = elevFloorIdx > 0
+      // generate all possible moves
+      // up
+      if (upStates) {
+        moves.push(...generate1ElemMoves(state, elevFloorIdx, true))
+        if (state.floors[elevFloorIdx].length > 2) { // more than elevator and an element
+          moves.push(...generate2ElemMoves(state, elevFloorIdx, true))
+        }
+      }
+      // down
+      if (downStates) {
+        moves.push(...generate1ElemMoves(state, elevFloorIdx, false))
+        if (state.floors[elevFloorIdx].length > 2) { // more than elevator and an element
+          moves.push(...generate2ElemMoves(state, elevFloorIdx, false))
+        }
+      }
+
+      return moves
+    }
+
+    var isFloorEmpty = function(floor) {
+      return floor.length == 0
+    }
+
+    var isFloorOnlySameType = function(floor) {
+      return floor.reduce(function(accum, val) {
+          if (accum.charAt(0) == 'E') {
+            return val
+          } else if (val == 'E') {
+            return accum
+          } else if (val.charAt(0) == accum.charAt(0)) {
+            return val
+          } else {
+            return '#'
           }
-          if (!moved && j < 3) {
-            for (var k = 0; k < floors[j].length; k++) {
-              var elem = floors[j][k]
-              var chip = elem.startsWith('M')
-              if (chipGenMatch(elem, floors[j+1])) {
-                // move up
-                floors[j].splice(k, 1)
-                floors[j+1].push(elevator)
-                floors[j+1].push(elem)
-                moved = true
+        }) != '#'
+    }
+
+    var isValidState = function(state) {
+      var validState = true
+      for (var i = 0; i < state.floors.length; i++) {
+        if (isFloorEmpty(floors[i])
+          || isFloorOnlySameType(floors[i])) {
+          continue
+        } else {
+          // check if all chips have generators
+          for (var j = 0; j < floors[i].length; j++) {
+            var elem = floors[i][j]
+            if (elem == 'E') {
+              continue
+            } else if (elem.charAt(0) == 'M') {
+              var matchGenerator = floors[i].find(function(e) {
+                return e.charAt(0) == 'G' && e.substr(1) == elem
+              })
+              if (!matchGenerator) {
+                validState = false
                 break
               }
             }
           }
-          if (!moved && j > 0) {
-            for (var k = 0; k < floors[j].length; k++) {
-              var elem = floors[j][k]
-              var chip = elem.startsWith('M')
-              if (chipGenMatch(elem, floors[j-1])) {
-                // move down
-                floors[j].splice(k, 1)
-                floors[j-1].push(elevator)
-                floors[j-1].push(elem)
-                moved = true
-                break
-              }
-            }
-          }
-          if (moved) {
+          if (!validState) {
             break
           }
         }
       }
-      steps++
+      return validState
     }
-    printFloors(floors)
+
+    var passedStates = []
+    var isRepeatedState = function(state) {
+      var stateStr = ''
+      $.each(state.floors, function(i, f) {
+        stateStr += 'F' + i + ':' // floor #
+        var elevator = f.includes('E') ? '1' : '0'
+        stateStr += 'E' + elevator + ',' // elevator on floor
+        // count generators
+        var generators = f.reduce(function (accum, val) {
+          return accum + (val.charAt(0) == 'G' ? 1 : 0)
+        }, 0)
+        stateStr += 'G' + generators + ','
+        // count microchips
+        var microchips = f.reduce(function (accum, val) {
+          return accum + (val.charAt(0) == 'M' ? 1 : 0)
+        }, 0)
+        stateStr += 'M' + microchips + '.'
+      })
+      if (passedStates.includes(stateStr)) {
+        return true
+      } else {
+        passedStates.push(stateStr)
+        return false
+      }
+    }
+
+    var isFinalState = function(state) {
+      var allLengths = state.floors.reduce(function (accum, val) {
+        return accum + val.length
+      }, 0)
+      return state.floors[3].length == allLengths
+    }
+
+    var initialState = {'floors': floors, 'steps': 0}
+    var nextStates = [initialState]
+    while (nextStates.length > 0) {
+      var state = nextStates.shift()
+      if (isFinalState(state)) {
+        console.log('final state: '+state.steps)
+        minSteps = state.steps < minSteps ? state.steps : minSteps
+      } else {
+        var possibleMoves = generateMoves(state)
+        // console.log(possibleMoves)
+        $.each(possibleMoves, function(idx, st) {
+          if (isValidState(st) && !isRepeatedState(st)) {
+            nextStates.push(st)
+          }
+        })
+      }
+    }
+
+    // printFloors(floors)
 
     $('#day11').append(input[i])
       .append('<br>&emsp;')
-      .append(steps)
+      .append(minSteps)
       .append('<br>')
   }
 }
