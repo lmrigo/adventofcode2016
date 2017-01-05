@@ -236,9 +236,82 @@ var day11 = function() {
 var day11part2 = function() {
 
   for (var i = 0; i < input.length; i++) {
+    var minSteps = Number.MAX_SAFE_INTEGER
+    var ignoreWords = ['The', 'first', 'second', 'third', 'fourth', 'floor', 'contains', 'a', 'and', '', 'nothing', 'relevant']
+    var splitFloorInput = input[i].split(/\n/)
+    var originalFloors = []
+    for (var j = 0; j < splitFloorInput.length; j++) {
+      var f = []
+      var splitElemInput = splitFloorInput[j].split(/\s|\./)
+      for (var k = 0; k < splitElemInput.length; k++) {
+        if (ignoreWords.includes(splitElemInput[k])) {
+          continue
+        } else if (splitElemInput[k].includes('compatible')) {
+          var elem = splitElemInput[k].substr(0, splitElemInput[k].indexOf('-'))
+          f.push('M' + elem)
+          k++
+        } else {
+          var elem = splitElemInput[k]
+          f.push('G' + elem)
+          k++
+        }
+      }
+      originalFloors.push(f)
+    }
+    var elevator = 'E'
+    // part 2 specific
+    originalFloors[0].push(elevator, 'Gelerium', 'Melerium', 'Gdilithium', 'Mdilithium')
+
+
+    // printFloors(originalFloors)
+
+    var passedStates = []
+    var isRepeatedState = function(state) {
+      var stateStr = ''
+      $.each(state.floors, function(idx, f) {
+        stateStr += 'F' + idx + ':' // floor #
+        var elevator = f.includes('E') ? '1' : '0'
+        stateStr += 'E' + elevator + ',' // elevator on floor
+        // count generators
+        var generators = f.reduce(function (accum, val) {
+          return accum + (val.charAt(0) == 'G' ? 1 : 0)
+        }, 0)
+        stateStr += 'G' + generators + ','
+        // count microchips
+        var microchips = f.reduce(function (accum, val) {
+          return accum + (val.charAt(0) == 'M' ? 1 : 0)
+        }, 0)
+        stateStr += 'M' + microchips + '.'
+      })
+      if (passedStates.includes(stateStr)) {
+        return true
+      } else {
+        passedStates.push(stateStr)
+        return false
+      }
+    }
+
+    var initialState = {'floors': originalFloors, 'steps': 0}
+    var nextStates = [initialState]
+    while (nextStates.length > 0) {
+      var state = nextStates.shift()
+      if (isFinalState(state)) {
+        // console.log('final state: '+state.steps)
+        // printFloors(state.floors)
+        minSteps = state.steps < minSteps ? state.steps : minSteps
+      } else {
+        var possibleMoves = generateMoves(state)
+        // console.log(possibleMoves)
+        $.each(possibleMoves, function(idx, st) {
+          if (isValidState(st) && !isRepeatedState(st)) {
+            nextStates.push(st)
+          }
+        })
+      }
+    }
     $('#day11part2').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(minSteps)
       .append('<br>')
   }
 
