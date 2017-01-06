@@ -90,11 +90,12 @@ var generateMoves = function(st) {
 /*var isRepeatedState = function(state) {
   return !state.
 }*/
+
 var map = []
+
 var day13 = function() {
 
   for (var i = 0; i < input.length; i++) {
-
     // increase these values as required
     var maxX = 60
     var maxY = 60
@@ -115,8 +116,8 @@ var day13 = function() {
         }
       }
     }
-
     // printMap(map)
+
     // after the table is complete, find a way to calculate the steps to get there
     // start at 1,1
     var x = 1
@@ -159,10 +160,61 @@ var day13 = function() {
 var day13part2 = function() {
 
   for (var i = 0; i < input.length; i++) {
+    // increase these values as required
+    var maxX = 60
+    var maxY = 60
+
+    map = [] // reset map
+    // prepare data
+    // iterate over the positions
+    for (var x = 0; x < maxX; x++) {
+      map[x] = []
+      for (var y = 0; y < maxY; y++) {
+        var pos = preCalc(x, y)
+        var posNum = pos + input[i]
+        var onesCount = posNum.toString(2).replace(/0/g,'').length
+        if (onesCount % 2 === 0) { // is even, an open space
+          map[x][y] = '.'
+        } else { // is odd, a wall
+          map[x][y] = '#'
+        }
+      }
+    }
+    // printMap(map)
+
+    var locations = []
+    // start at 1,1
+    var x = 1
+    var y = 1
+
+    var initialState = {'x': 1, 'y':1, 'steps': 0, 'trace': ['1,1']}
+    var nextStates = [initialState]
+    var timeout = 100000
+
+    while (--timeout && nextStates.length > 0) {
+      var state = nextStates.shift()
+      if (state.steps <= 50) { // how many distinct locations can be reached in 50 steps
+        var loc = state.x+','+state.y
+        if (!locations.includes(loc)) {
+          locations.push(loc)
+          // console.log(loc)
+        }
+      }
+      var possibleMoves = generateMoves(state)
+      $.each(possibleMoves, function(idx, st) {
+        if (st.steps <= 50) {
+          nextStates.push(st)
+        }
+      })
+    }
+    if (!timeout) {
+      console.log('timeout!')
+    }
+    //2508 too high
 
     $('#day13part2').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(locations.length)
       .append('<br>')
   }
 
