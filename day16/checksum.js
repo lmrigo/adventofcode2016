@@ -56,15 +56,43 @@ var day16 = function() {
   }
 }
 
+var puzzleInputPart2 = ['10010000000110000', 35651584]
+
 var day16part2 = function() {
 
-  for (var i = 0; i < input.length; i++) {
+  // for (var i = 0; i < input.length; i++) {
 
-    $('#day16part2').append(input[i])
+    // generate data
+    var a = puzzleInputPart2[0]
+    var diskSize = puzzleInputPart2[1]
+    while (a.length < diskSize) {
+      var b = reverseNegate(a)
+      a = a + '0' + b
+    }
+    //console.log(a)
+    // truncate to disk size
+    a = a.substr(0, diskSize)
+
+    // generate checskum
+    var checksum = a
+    do {
+      var newChecksum = ''
+      for (var j = 0; j < checksum.length; j=j+2) {
+        var pair = checksum.charAt(j) + checksum.charAt(j+1)
+        if (pair == '11' || pair == '00') {
+          newChecksum += '1'
+        } else {
+          newChecksum += '0'
+        }
+      }
+      checksum = newChecksum
+    } while (checksum.length % 2 == 0)
+
+    $('#day16part2').append(puzzleInputPart2)
       .append('<br>&emsp;')
-      .append()
+      .append(checksum)
       .append('<br>')
-  }
+  // }
 
 }
 
