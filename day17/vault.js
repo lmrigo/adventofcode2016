@@ -129,20 +129,40 @@ var day17 = function() {
   }
 }
 
-var md5x2017 = function(input) {
-  var finalHash = input
-  for (var i = 0; i < 2017; i++) {
-    finalHash = md5(finalHash)
-  }
-  return finalHash
-}
-
 var day17part2 = function() {
   for (var i = 0; i < input.length; i++) {
+    var key = input[i]
+
+    var maxSteps = 0
+    var maxPath = ''
+    var initialState = {'x': 0, 'y':0, 'steps': 0, 'path': '', 'trace': []}
+    var nextStates = [initialState]
+    var timeout = 1000000
+    while (nextStates.length > 0 && --timeout) {
+      var state = nextStates.shift()
+      // how many steps is the longest to reach the vault 3,3
+      if (state.x == 3 && state.y == 3) {
+        // console.log(state.steps, state.path)
+        if (state.steps > maxSteps) {
+          maxSteps = state.steps
+          maxPath = state.path
+        }
+      } else {
+        var possibleMoves = generateMoves(state, key)
+        nextStates.push(...possibleMoves)
+        // console.log(possibleMoves)
+      }
+    }
+    if (!timeout) {
+      console.log('timeout!')
+    } else if (maxPath.length == 0) {
+      // console.log('impossible!')
+      maxPath = 'impossible'
+    }
 
     $('#day17part2').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(maxSteps+ ': ' + maxPath)
       .append('<br>')
   }
 
