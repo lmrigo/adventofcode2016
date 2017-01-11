@@ -98,8 +98,13 @@ var day17 = function() {
     var timeout = 1000
     while (nextStates.length > 0 && --timeout) {
       var state = nextStates.shift()
-      if (state.x == 3 && state.y == 3) { // how many steps is the fewest to reach the vault 3,3
-        console.log(state.steps, state.path)
+      // if the path is already longer than an existing minium, skip it
+      if (minPath.length != 0 && minPath.length < state.path.length) {
+        continue
+      }
+      // how many steps is the fewest to reach the vault 3,3
+      if (state.x == 3 && state.y == 3) {
+        // console.log(state.steps, state.path)
         if (state.steps < minSteps) {
           minSteps = state.steps
           minPath = state.path
@@ -112,7 +117,7 @@ var day17 = function() {
     }
     if (!timeout) {
       console.log('timeout!')
-    } else if (nextStates.length == 0) {
+    } else if (minPath.length == 0) {
       console.log('impossible!')
       minPath = 'impossible'
     }
