@@ -1,6 +1,10 @@
 var puzzleInput = '3014603'
 var input = [
   '5',
+  '6',
+  '7',
+  '8',
+  '50000',
   puzzleInput
 ]
 
@@ -15,25 +19,7 @@ var day19 = function() {
       elves.push([num++, 1])
     }
     // console.log(elves)
-/*
-    // start the game
-    var timeout = 1000000 // too inneficient :(
-    while (elves.length > 1 && --timeout) {
-      var cur = elves.shift()
-      if (cur[1] > 0) {
-        var next = elves.shift()
-        cur[1] += next[1]
-        elves.push(cur)
-      }
-    }
-    if (!timeout) {
-      console.log('timeout!')
-    }
-    // console.log(elves)
-    if (elves.length == 1) {
-      elfNumber = elves[0][0]
-    }
-*/
+
     // start the game
     var e = 0
     var onlyOneLeft = false
@@ -90,10 +76,52 @@ var day19 = function() {
 
 var day19part2 = function() {
   for (var i = 0; i < input.length; i++) {
+    var elfNumber = -1
+    var numOfElves = Number(input[i])
+    var halfNumOfElves = numOfElves >> 1
+    var num = 1
+    var elvesA = new Queue(halfNumOfElves)
+    for (var j = 0; j < halfNumOfElves; j++) {
+      elvesA.enqueue(j+1)
+    }
+    var halfIndex = numOfElves - halfNumOfElves
+    var elvesB = new Queue(halfIndex)
+    for (var j = 0; j < halfIndex; j++) {
+      elvesB.enqueue(j+halfIndex)
+    }
+    // console.log(elvesA, elvesB)
+
+    // start the game
+    var onlyOneLeft = false
+    var timeout = 10000000
+    while (!onlyOneLeft && --timeout) {
+      if (timeout % 1000000 == 0) {
+        console.log(elvesA.getLength(), elvesB.getLength())
+      }
+      // steal the victim
+      var victim = elvesB.dequeue()
+      if (elvesB.isEmpty()) {
+        onlyOneLeft = true
+        break
+      }
+      // rotate
+      elvesB.enqueue(elvesA.dequeue())
+      if (elvesA.getLength()+1 != elvesB.getLength()) {
+        elvesA.enqueue(elvesB.dequeue())
+      }
+    }
+    // console.log(elvesA, elvesB)
+    if (!timeout) {
+      console.log('timeout!')
+    }
+    if (onlyOneLeft) {
+      elfNumber = elvesA.dequeue()
+    }
+    // console.log(elfNumber)
 
     $('#day19part2').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(elfNumber)
       .append('<br>')
   }
 
