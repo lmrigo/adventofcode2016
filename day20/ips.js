@@ -55,12 +55,68 @@ var day20 = function() {
   }
 }
 
+var printRange = function(range) {
+  var str = ''
+  for (var r = 0; r < range.length; r++) {
+    if (range[r][1] === '<') {
+      str += range[r][1]+'('+range[r][0]+')'
+    } else {
+      str += '('+range[r][0]+')'+range[r][1]
+    }
+  }
+  console.log(str)
+}
+
 var day20part2 = function() {
   for (var i = 0; i < input.length; i++) {
+    var intervals = []
+
+    var inputsIps = input[i].split(/\n/)
+    for (var j = 0; j < inputsIps.length; j++) {
+      var range = inputsIps[j].split(/-/)
+      intervals.push({
+        'low': Number(range[0]),
+        'high': Number(range[1])
+      })
+    }
+
+    var range = [ [minIp-1 ,'>'], [maxIp+1, '<']]
+    $.each(intervals, function (idx, interval) {
+      var low = -1
+      var high = -1
+      for (var j = 0; j < range.length-1; j++) {
+        if (range[j][0] <= interval.low && interval.low < range[j+1][0]) {
+          low = j+1
+          for (var k = j+1; k < range.length; k++) {
+            if (interval.high < range[k][0]) {
+              high = k
+              break
+            }
+          }
+          break
+        }
+      }
+      range.splice(high, 0, [interval.high, '>'])
+      range.splice(low, 0, [interval.low, '<'])
+    })
+    // printRange(range)
+
+    var whiteIps = 0
+    var closings = 1
+    for (var j = 0; j < range.length-1; j++) {
+      if (range[j][1] === '>') {
+        closings--
+        if (!closings && range[j+1][1] === '<') {
+          whiteIps += range[j+1][0] - (range[j][0] + 1)
+        }
+      } else if (range[j][1] === '<') {
+        closings++
+      }
+    }
 
     $('#day20part2').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(whiteIps)
       .append('<br>')
   }
 
