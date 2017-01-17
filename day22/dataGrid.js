@@ -10,7 +10,7 @@ Filesystem            Size  Used  Avail  Use%
 /dev/grid/node-x2-y0   10T    6T     4T   60%
 /dev/grid/node-x2-y1    9T    8T     1T   88%
 /dev/grid/node-x2-y2    9T    6T     3T   66%`,
-  // puzzleInput
+  puzzleInput
 ]
 
 function Node(x, y, size, used, avail, usePct, target) {
@@ -103,7 +103,8 @@ var createStateId = function (nodes) {
     for (var ni = 0; ni < nodes.length; ni++) {
       var n = nodes[ni][nj]
       // line.push('(',n.x,',',n.y,')[',n.used,'|',n.avail,']')
-      line.push('[',n.used,'|',n.avail,']')
+      // line.push('[',n.used,'|',n.avail,']')
+      line.push(n.avail,'|') //TODO: try to reduce memory consumption
       if (n.target) {
         line.push('*')
       }
@@ -118,8 +119,12 @@ var isFinalState = function (st) {
 }
 
 var passedStates = []
-var isRepeatedState = function (st) {
-  return passedStates.includes(st.id)
+var isRepeatedState = function (id) {
+  var repeated = passedStates.includes(id)
+  if (!repeated) {
+    passedStates.push(id)
+  }
+  return repeated
 }
 
 var cloneState = function (st) {
@@ -166,31 +171,40 @@ var generateMoves = function (st) {
           && n.canTransferData(st.nodes[ni+1][nj])) {
         var newState = cloneState(st)
         moveState(newState, ni, nj, ni+1, nj)
-        generatedStates.push(newState)
+        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
+          generatedStates.push(newState)
+        }
       }
       if (ni > 0
           && n.canTransferData(st.nodes[ni-1][nj])) {
         var newState = cloneState(st)
         moveState(newState, ni, nj, ni-1, nj)
-        generatedStates.push(newState)
+        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
+          generatedStates.push(newState)
+        }
       }
       if (nj < st.nodes[ni].length-1
           && n.canTransferData(st.nodes[ni][nj+1])) {
         var newState = cloneState(st)
         moveState(newState, ni, nj, ni, nj+1)
-        generatedStates.push(newState)
+        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
+          generatedStates.push(newState)
+        }
       }
       if (nj > 0
           && n.canTransferData(st.nodes[ni][nj-1])) {
         var newState = cloneState(st)
         moveState(newState, ni, nj, ni, nj-1)
-        generatedStates.push(newState)
+        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
+          generatedStates.push(newState)
+        }
       }
     }
   }
   return generatedStates
 }
 
+var minSteps = Number.MAX_SAFE_INTEGER
 var day22part2 = function() {
 
   for (var i = 0; i < input.length; i++) {
@@ -223,24 +237,30 @@ var day22part2 = function() {
     // iterate over all the nodes and find those who can transfer data to neighbours
     // use that as the next states
 
-    var minSteps = Number.MAX_SAFE_INTEGER
+    minSteps = Number.MAX_SAFE_INTEGER
     var initialState = {'nodes': nodes, 'steps': 0, 'id': createStateId(nodes)}
     // console.log(initialState.id)
     var nextStates = [initialState]
     var timeout = 10000
     while (--timeout && nextStates.length > 0) {
       var state = nextStates.shift()
-      // console.log(state.id)
+      if (state.steps >= minSteps) {
+        continue
+      }
+      if (timeout % 100 === 0) {
+        console.log(state.id, state.steps, nextStates.length, timeout)
+      }
       if (isFinalState(state)) {
-        console.log('opa!')
         minSteps = state.steps < minSteps ? state.steps : minSteps
+        console.log(state.id, minSteps)
       } else {
-        var possibleMoves = generateMoves(state)
-        $.each(possibleMoves, function(idx, st) {
-          if (st.steps < minSteps && !isRepeatedState(st.id)) {
-            nextStates.push(st)
-          }
-        })
+        nextStates.push(...generateMoves(state))
+        // var possibleMoves = generateMoves(state)
+        // $.each(possibleMoves, function(idx, st) {
+          // if (st.steps < minSteps && !isRepeatedState(st.id)) {//moved inside generation
+            // nextStates.push(st)
+          // }
+        // })
       }
     }
     if (!timeout) {
