@@ -41,11 +41,28 @@ var day22 = function() {
       }
       nodes[x][y] = n
     }
-    console.log(nodes)
+    // console.log(nodes)
+    var viablePairs = 0
+    for (var ni = 0; ni < nodes.length; ni++) {
+      // console.log(ni, viablePairs)
+      for (var nj = 0; nj < nodes[ni].length; nj++) {
+        var a = nodes[ni][nj]
+        for (var nk = 0; nk < nodes.length; nk++) {
+          for (var nl = 0; nl < nodes[nk].length; nl++) {
+            var b = nodes[nk][nl]
+            if (a.used > 0
+                && a !== b
+                && a.used <= b.avail) {
+              viablePairs++
+            }
+          }
+        }
+      }
+    }
 
     $('#day22').append(input[i])
       .append('<br>&emsp;')
-      .append()
+      .append(viablePairs)
       .append('<br>')
   }
 
