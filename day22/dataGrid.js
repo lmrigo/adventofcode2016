@@ -13,19 +13,17 @@ Filesystem            Size  Used  Avail  Use%
   puzzleInput
 ]
 
-function Node(x, y, size, used, avail, usePct, target) {
-  this.x = x
-  this.y = y
+function Node(size, used, avail, usePct, target) {
   this.size = size
   this.used = used
   this.avail = avail
-  this.usePct = usePct
+  // this.usePct = usePct
   this.target = target
   this.canTransferData = function (other) {
-    return this.used <= other.avail
+    return other.used === 0 && this.used <= other.avail
   }
   this.clone = function () {
-    return new Node(this.x, this.y, this.size, this.used, this.avail, this.usePct, this.target)
+    return new Node(this.size, this.used, this.avail, this.usePct, this.target)
   }
 }
 
@@ -50,7 +48,7 @@ var day22 = function() {
       var pos = nodeArr[0].split(/-/)
       var x = Number(pos[1].substr(1))
       var y = Number(pos[2].substr(1))
-      var n = new Node(x, y, numVal(nodeArr[1]), numVal(nodeArr[2]), numVal(nodeArr[3]), pctVal(nodeArr[4]))
+      var n = new Node(numVal(nodeArr[1]), numVal(nodeArr[2]), numVal(nodeArr[3]), pctVal(nodeArr[4]))
       if (nodes[x] === undefined) {
         nodes[x] = []
       }
@@ -67,8 +65,8 @@ var day22 = function() {
             var b = nodes[nk][nl]
             if (a.used > 0
                 && a !== b
-                // && a.used <= b.avail) {
-                && a.canTransferData(b)) {
+                && a.used <= b.avail) {
+                // && a.canTransferData(b)) {
               viablePairs++
             }
           }
@@ -86,9 +84,14 @@ var day22 = function() {
 var printNodes = function (nodes) {
   var cols = nodes[0].length
   var str = ''
-  for (var nj = 0; nj < cols; nj++) {
-    for (var ni = 0; ni < nodes.length; ni++) {
-      str += nodes[ni][nj].usePct > 0.7 ? '.' : '_'
+  for (var pj = 0; pj < cols; pj++) {
+    for (var pi = 0; pi < nodes.length; pi++) {
+      if (nodes[pi][pj].target) {
+        str += '*'
+      } else {
+        str += nodes[pi][pj].size > 100 ? '#' : nodes[pi][pj].used === 0 ? '_' : '.'
+        // str += '|' + (pi >= 10 ? pi : '0'+ pi) + ',' + (pj >= 10 ? pj : '0'+ pj)
+      }
     }
     str += '\n'
   }
@@ -98,15 +101,17 @@ var printNodes = function (nodes) {
 var createStateId = function (nodes) {
   var cols = nodes[0].length
   var id = []
-  for (var nj = 0; nj < cols; nj++) {
+  for (var idj = 0; idj < cols; idj++) {
     var line = []
-    for (var ni = 0; ni < nodes.length; ni++) {
-      var n = nodes[ni][nj]
+    for (var idi = 0; idi < nodes.length; idi++) {
+      var n = nodes[idi][idj]
       // line.push('(',n.x,',',n.y,')[',n.used,'|',n.avail,']')
       // line.push('[',n.used,'|',n.avail,']')
-      line.push(n.avail,'|') //TODO: try to reduce memory consumption
+      // line.push('|',n.avail)
       if (n.target) {
         line.push('*')
+      } else {
+        line.push(n.size > 100 ? '#' : n.used === 0 ? '_' : '.')
       }
     }
     id.push(line.join(''))
@@ -133,10 +138,10 @@ var cloneState = function (st) {
     'steps': st.steps,
     'id': st.id
   }
-  for (var ni = 0; ni < st.nodes.length; ni++) {
-    cloned.nodes[ni] = []
-    for (var nj = 0; nj < st.nodes[ni].length; nj++) {
-      cloned.nodes[ni][nj] = st.nodes[ni][nj].clone()
+  for (var ci = 0; ci < st.nodes.length; ci++) {
+    cloned.nodes[ci] = []
+    for (var cj = 0; cj < st.nodes[ci].length; cj++) {
+      cloned.nodes[ci][cj] = st.nodes[ci][cj].clone()
     }
   }
   return cloned
@@ -146,15 +151,16 @@ var cloneState = function (st) {
 var moveState = function (st, x1, y1, x2, y2) {
   var sourceData = st.nodes[x1][y1].used
   st.nodes[x1][y1].used = 0
-  st.nodes[x1][y1].avail = st.nodes[x1][y1].size
-  st.nodes[x1][y1].usePct = 0
+  // st.nodes[x1][y1].avail = st.nodes[x1][y1].size
+  st.nodes[x1][y1].avail += sourceData
+  // st.nodes[x1][y1].usePct = 0
   if (st.nodes[x1][y1].target) {
     st.nodes[x1][y1].target = false
     st.nodes[x2][y2].target = true
   }
   st.nodes[x2][y2].used += sourceData
   st.nodes[x2][y2].avail -= sourceData
-  st.nodes[x2][y2].usePct = (st.nodes[x2][y2].used / st.nodes[x2][y2].size) / 100.0
+  // st.nodes[x2][y2].usePct = (st.nodes[x2][y2].used / st.nodes[x2][y2].size) / 100.0
 
   st.steps++
 
@@ -163,27 +169,14 @@ var moveState = function (st, x1, y1, x2, y2) {
 
 var generateMoves = function (st) {
   var generatedStates = []
-  for (var ni = 0; ni < st.nodes.length; ni++) {
-    for (var nj = 0; nj < st.nodes[ni].length; nj++) {
+  var cols = st.nodes[0].length
+  for (var nj = 0; nj < cols; nj++) {
+    for (var ni = 0; ni < st.nodes.length; ni++) {
       // check the four neighbours: ni+1, ni-1, nj+1, nj-1
+      // !IMPORTANT! moving data left makes the blank go right
       var n = st.nodes[ni][nj]
-      if (ni < st.nodes.length-1
-          && n.canTransferData(st.nodes[ni+1][nj])) {
-        var newState = cloneState(st)
-        moveState(newState, ni, nj, ni+1, nj)
-        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
-          generatedStates.push(newState)
-        }
-      }
-      if (ni > 0
-          && n.canTransferData(st.nodes[ni-1][nj])) {
-        var newState = cloneState(st)
-        moveState(newState, ni, nj, ni-1, nj)
-        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
-          generatedStates.push(newState)
-        }
-      }
-      if (nj < st.nodes[ni].length-1
+      // down
+      if ((nj < st.nodes[ni].length-1)
           && n.canTransferData(st.nodes[ni][nj+1])) {
         var newState = cloneState(st)
         moveState(newState, ni, nj, ni, nj+1)
@@ -191,8 +184,27 @@ var generateMoves = function (st) {
           generatedStates.push(newState)
         }
       }
-      if (nj > 0
-          && n.canTransferData(st.nodes[ni][nj-1])) {
+      // right
+      if ((ni < st.nodes.length-1) && (nj > 19 || nj < 2) // dont need to go left between the wall and the top
+          && n.canTransferData(st.nodes[ni+1][nj])) {
+        var newState = cloneState(st)
+        moveState(newState, ni, nj, ni+1, nj)
+        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
+          generatedStates.push(newState)
+        }
+      }
+      // left
+      if ((ni > 0) && (nj < 19) // dont need to go right before the wall
+          && (n.canTransferData(st.nodes[ni-1][nj]))) {
+        var newState = cloneState(st)
+        moveState(newState, ni, nj, ni-1, nj)
+        if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
+          generatedStates.push(newState)
+        }
+      }
+      // up
+      if ((nj > 0) && (nj < 2) // there's no need to go down before reaching the top
+          && (n.canTransferData(st.nodes[ni][nj-1]))) {
         var newState = cloneState(st)
         moveState(newState, ni, nj, ni, nj-1)
         if (newState.steps < minSteps && !isRepeatedState(newState.id)) {
@@ -218,7 +230,7 @@ var day22part2 = function() {
       var pos = nodeArr[0].split(/-/)
       var x = Number(pos[1].substr(1))
       var y = Number(pos[2].substr(1))
-      var n = new Node(x, y, numVal(nodeArr[1]), numVal(nodeArr[2]), numVal(nodeArr[3]), pctVal(nodeArr[4]))
+      var n = new Node(numVal(nodeArr[1]), numVal(nodeArr[2]), numVal(nodeArr[3]), pctVal(nodeArr[4]))
       if (nodes[x] === undefined) {
         nodes[x] = []
       }
@@ -241,36 +253,26 @@ var day22part2 = function() {
     var initialState = {'nodes': nodes, 'steps': 0, 'id': createStateId(nodes)}
     // console.log(initialState.id)
     var nextStates = [initialState]
-    var timeout = 10000
+    var timeout = 100000
     while (--timeout && nextStates.length > 0) {
       var state = nextStates.shift()
       if (state.steps >= minSteps) {
         continue
       }
-      if (timeout % 100 === 0) {
+      if (timeout % 1000 === 0 || nextStates.length === 0) {
         console.log(state.id, state.steps, nextStates.length, timeout)
       }
       if (isFinalState(state)) {
         minSteps = state.steps < minSteps ? state.steps : minSteps
         console.log(state.id, minSteps)
+        // it's possible to remove from nextStates the states which have more steps than minSteps
       } else {
         nextStates.push(...generateMoves(state))
-        // var possibleMoves = generateMoves(state)
-        // $.each(possibleMoves, function(idx, st) {
-          // if (st.steps < minSteps && !isRepeatedState(st.id)) {//moved inside generation
-            // nextStates.push(st)
-          // }
-        // })
       }
     }
     if (!timeout) {
       console.log('timeout!')
     }
-    // for (var ni = 0; ni < nodes.length; ni++) {
-    //   for (var nj = 0; nj < nodes[ni].length; nj++) {
-
-    //   }
-    // }
 
 
     $('#day22part2').append(input[i])
