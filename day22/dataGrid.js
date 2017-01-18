@@ -260,11 +260,11 @@ var day22part2 = function() {
         continue
       }
       if (timeout % 1000 === 0 || nextStates.length === 0) {
-        console.log(state.id, state.steps, nextStates.length, timeout)
+        // console.log(state.id, state.steps, nextStates.length, timeout)
       }
       if (isFinalState(state)) {
         minSteps = state.steps < minSteps ? state.steps : minSteps
-        console.log(state.id, minSteps)
+        // console.log(state.id, minSteps)
         // it's possible to remove from nextStates the states which have more steps than minSteps
       } else {
         nextStates.push(...generateMoves(state))
