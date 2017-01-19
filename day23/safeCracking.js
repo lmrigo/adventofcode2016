@@ -13,6 +13,7 @@ var day23 = function() {
   for (var i = 0; i < input.length; i++) {
 
     var assembunny = {
+      program: '',
       // program counter
       pc: 0,
       // registers
@@ -22,11 +23,13 @@ var day23 = function() {
       'd': 0,
       // instructions
       'cpy': function(x, y) {
-        var numX = Number(x)
-        if (isNaN(numX)) {
-          this[y] = this[x]
-        } else {
-          this[y] = numX
+        if (isNaN(Number(y))) { // only copy if y is a register
+          var numX = Number(x)
+          if (isNaN(numX)) { // if x is a register, get its content
+            this[y] = this[x]
+          } else {
+            this[y] = numX
+          }
         }
         this.pc++
       },
@@ -52,13 +55,35 @@ var day23 = function() {
         } else {
           this.pc++
         }
+      },
+      'tgl': function(x) {
+        var numX = Number(x)
+        if (isNaN(numX)) { // if x is a register, get its content
+          numX = this[x]
+        }
+        var numX = this.pc + numX // target instruction numX away from current
+        this.pc++
+        if (numX >= this.program.length) {
+          return
+        }
+        var instr = this.program[numX].split(/\s/)
+        if (instr.length === 2) {
+          instr[0] === 'inc' ? instr[0] = 'dec' : instr[0] = 'inc'
+        } else if (instr.length === 3) {
+          instr[0] === 'jnz' ? instr[0] = 'cpy' : instr[0] = 'jnz'
+        }
+        this.program[numX] = instr.join(' ')
       }
     }
 
+    if (i === 1) { // puzzleInput
+      assembunny.a = 7
+    }
+
     var timeout = 100000000
-    var program = input[i].split(/\n/)
-    while (assembunny.pc < program.length && --timeout) {
-      var instr = program[assembunny.pc].split(/\s/)
+    assembunny.program = input[i].split(/\n/)
+    while (assembunny.pc < assembunny.program.length && --timeout) {
+      var instr = assembunny.program[assembunny.pc].split(/\s/)
       assembunny[instr[0]](instr[1], instr[2])
     }
     if (!timeout) console.log('timeout!')
