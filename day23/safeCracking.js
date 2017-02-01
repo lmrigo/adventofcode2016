@@ -249,7 +249,6 @@ var day23part2 = function() {
       assembunny[operation](operatorX, operatorY, operatorZ, operatorW)
     }
     if (!timeout) console.log('timeout!')
-    console.log(assembunny.a,assembunny.b,assembunny.c,assembunny.d)
 
 
     $('#day23part2').append(input[i])
