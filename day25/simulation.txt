@@ -1,0 +1,102 @@
+
+a = x0    |a  b  c  d
+cpy a d  |x0  0  0  x0
+//cpy 15 c |0  0  15 0
+//cpy 170 b|0  1700  0
+//inc d    |0  0  0  1
+//dec b    |0  1690  0
+//jnz b -2 |0  0  0  0
+//dec c    |0  0  0  0
+//jnz c -5 |0  0  0  0  -21
+x1= x0*2550
+mul      |x0 0  0  x1
+cpy d a  |x1 0  0  x1
+//jnz 0 0  |0  0  0  0
+cpy a b  |x1 x1 0  x1 -19
+cpy 0 a  |0  x1 0  x1
+cpy 2 c  |0  xb 2  x1
+jnz b 2  |0  xb 2  x1
+jnz 1 6  |0  0  0  0
+dec b    |0  xb 2  x1  b=x1-x1
+dec c    |0  xb 0  x1
+jnz c -4 |0  xb 0  x1
+inc a    |1  xb 0  x1
+jnz 1 -7 |1  xb 0  x1
+x2 = x1/2
+cpy 2 b  |x2 2  2  x1
+jnz c 2  |x2 0  0  x1
+jnz 1 4  |x2 0  0  x1
+dec b    |x2 0  1  x1
+dec c    |x2 0  0  x1
+jnz 1 -4 |x2 0  0  x1
+jnz 0 0  |0  0  0  0
+out b    |x2 0  0  x1
+jnz a -19|x2 0  0  x1
+jnz 1 -21|0  0  0  0
+
+
+a = -2540|a    b    c    d
+cpy a d  |0    0    0   -2540
+cpy 15 c |0    0    15  -2540//m
+cpy 170 b|0    0    0    0   //u
+inc d    |0    0    0    0   //l
+dec b    |0    0    0    0   //t
+jnz b -2 |0    0    0    0   //i
+dec c    |0    0    0    0   //p
+jnz c -5 |0    0    0    10  //l a=a b=0 c=0 d+=2550
+cpy d a  |10   0    0    10   //-21
+jnz 0 0  |0    0    0    0
+cpy a b  |10   10   0    10   //-19
+cpy 0 a  |0    10   0    10  //div
+cpy 2 c  |5    0    2    10  //div //-7 a=0 b=10 c=2 d=d > a=5(d/2 int div) b=0 c=2 d=d
+jnz b 2  |5    0    2    10  //div //-4
+jnz 1 6  |0    0    0    0   //div
+dec b    |4    0    1    10  //div
+dec c    |4    0    0    10  //div //2
+jnz c -4 |4    0    0    10  //div
+inc a    |5    0    0    10  //div
+jnz 1 -7 |0    0    0    0   //div
+cpy 2 b  |5    2    2    10  //end div//6
+jnz c 2  |5    0    0    10   //-4
+jnz 1 4  |0    0    0    0
+dec b    |5    0    1    10   //2
+dec c    |5    0    0    10
+jnz 1 -4 |0    0    0    0
+jnz 0 0  |0    0    0    0    //4
+out b    |5    0    0    10
+jnz a -19|5    0    0    10
+jnz 1 -21|0    0    0    0
+
+
+
+a = -2540|a    b    c    d
+cpy a d  |0    0    0   -2540
+cpy 15 c |0    0    15  -2540//m
+cpy 170 b|0    0    0    0   //u
+inc d    |0    0    0    0   //l
+dec b    |0    0    0    0   //t
+jnz b -2 |0    0    0    0   //i
+dec c    |0    0    0    0   //p
+jnz c -5 |0    0    0    10  //l a=a b=0 c=0 d+=2550
+cpy d a  |10   0    0    10   //-21
+jnz 0 0  |0    0    0    0
+cpy a b  |10   5    0    10   //-19
+cpy 0 a  |0    5    0    10  //div
+cpy 2 c  |2    1    2    10  //div //-7 a=0 b=10 c=2 d=d > a=5(d/2 int div) b=0 c=2 d=d
+jnz b 2  |2    0    1    10  //div //-4
+jnz 1 6  |0    0    0    0   //div
+dec b    |2    0    2    10  //div
+dec c    |2    0    1    10  //div //2
+jnz c -4 |2    0    1    10  //div
+inc a    |2    1    0    10  //div
+jnz 1 -7 |0    0    0    0   //div
+cpy 2 b  |2    2    1    10  //end div//6
+jnz c 2  |2    1    0    10   //-4
+jnz 1 4  |0    0    0    0
+dec b    |2    1    1    10   //2
+dec c    |2    1    0    10
+jnz 1 -4 |0    0    0    0
+jnz 0 0  |0    0    0    0    //4
+out b    |2    1    0    10
+jnz a -19|x2   0    0    x1
+jnz 1 -21|0    0    0    0

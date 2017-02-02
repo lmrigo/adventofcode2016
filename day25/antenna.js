@@ -98,7 +98,8 @@ var assembunny = {
     if (isNaN(numX)) { // if x is a register, get its content
       numX = this[x]
     }
-    this.output = '' + numX
+    this.output = ''+ numX
+    this.pc++
   },
   'reset': function() {
     this.program = []
@@ -116,55 +117,39 @@ var day25 = function() {
 
     var inA = 0
 
-    for (inA = 0; inA < 120000; inA++) {
-      var trace = ''
+    for (inA = 0; inA < 100000; inA++) {
       assembunny.reset()
       assembunny.a = inA
       var prev = ''
-      var timeout = 600000
+      var trace = ''
+      var timeout = 1000
       $.each(input[i].split(/\n/), function(idx, inst){
         assembunny.program.push(inst.split(/\s/))
       })
       while (assembunny.pc < assembunny.program.length && --timeout) {
+        if (assembunny.pc === 1) {
+          //assembunny.a
+          assembunny.b = 0
+          assembunny.c = 0
+          assembunny.d +=2550
+          assembunny.pc = 8
+        } else if (assembunny.pc === 11) {
+          var prevB = assembunny.b
+          assembunny.a = prevB >> 1 // integer division by two
+          assembunny.b = 0
+          assembunny.c = prevB % 2 === 0 ? 2 : 1 // remainder
+          // assembunny.d
+          assembunny.pc = 20
+        }
         var instr = assembunny.program[assembunny.pc]
         var operation = instr[0]
         var operatorX = instr[1]
         var operatorY = instr[2]
         var operatorZ
         var operatorW
-        if (instr[0] === 'inc') { // check if it is a sum  //inc a
-          var instr1 = assembunny.program[assembunny.pc+1] //dec c
-          var instr2 = assembunny.program[assembunny.pc+2] //jnz c -2
-          if (instr1 && instr1[0] === 'dec'
-            && instr2 && instr2[0] === 'jnz' && instr2[2] === '-2'
-            && instr1[1] === instr2[1]) {
-            operation = 'sum'
-            operatorX = instr[1]
-            operatorY = instr1[1]
-          }
-        } else if (instr[0] === 'cpy') { // check if multi   //cpy b c
-            var instr1 = assembunny.program[assembunny.pc+1] //inc a
-            var instr2 = assembunny.program[assembunny.pc+2] //dec c
-            var instr3 = assembunny.program[assembunny.pc+3] //jnz c -2
-            var instr4 = assembunny.program[assembunny.pc+4] //dec d
-            var instr5 = assembunny.program[assembunny.pc+5] //jnz d -5
-            if (instr1 && instr1[0] === 'inc'
-              && instr2 && instr2[0] === 'dec'
-              && instr3 && instr3[0] === 'jnz' && instr3[2] === '-2'
-              && instr2[1] === instr3[1]
-              && instr[2] === instr2[1]
-              && instr4 && instr4[0] === 'dec'
-              && instr5 && instr5[0] === 'jnz' && instr5[2] === '-5'
-              && instr4[1] === instr5[1]) {
-            operation = 'mul'
-            operatorX = instr[1]  // val
-            operatorY = instr1[1] // dest reg
-            operatorZ = instr[2] // aux reg
-            operatorW = instr4[1] // val2 reg
-          }
-        }
         // execute
         assembunny[operation](operatorX, operatorY, operatorZ, operatorW)
+        // console.log(assembunny.a,assembunny.b,assembunny.c,assembunny.d, operation, operatorX, operatorY)
         if (operation === 'out') {
           var next = assembunny.output
           trace += next
@@ -172,7 +157,7 @@ var day25 = function() {
             prev = next
           } else if ((prev === '0' && next === '1')
                     || (prev === '1' && next === '0')) {
-            console.log(prev+''+next, inA)
+            // console.log(prev+''+next, inA)
             prev = next
           } else {
             break
@@ -180,14 +165,13 @@ var day25 = function() {
         }
       }
       if (!timeout) {
-        console.log('timeout:', trace)
+        console.log('timeout:', inA, trace)
         break
       }
       if (inA % 1000 === 0) {
         console.log('log', assembunny.output, inA)
       }
     }
-    console.log('regs', assembunny.a,assembunny.b,assembunny.c,assembunny.d)
 
     $('#day25').append(input[i])
       .append('<br>&emsp;')
