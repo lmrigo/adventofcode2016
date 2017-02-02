@@ -260,7 +260,7 @@ var day23part2 = function() {
 
 $(function (){
   $('#main').append('<div id="day23"><h2>day #23</h2></div>')
-  // day23()
+  day23()
   $('#main').append('<br><div id="day23part2"><h2>day #23 part 2</h2></div>')
   day23part2()
   $('#main').append('<br>')

@@ -83,7 +83,7 @@ var assembunny = {
     this[y] = 0
     this.pc += 3
   },
-  'mul': function(x, y, z, w) { // sums into reg y the mul of x and reg w and clears the other reg z and w
+  'mul': function(x, y, z, w) { // sums into reg y the mul of x and reg w and clears the regs z and w
     var numX = Number(x)
     if (isNaN(numX)) { // if x is a register, get its content
       numX = this[x]
@@ -112,15 +112,16 @@ var assembunny = {
 }
 
 var day25 = function() {
-  for (var i = 0; i < input.length; i++) {
+  for (var i = 1; i < input.length; i++) {
 
     var inA = 0
 
-    for (inA = 0; inA < 1000; inA++) {
+    for (inA = 0; inA < 120000; inA++) {
+      var trace = ''
       assembunny.reset()
       assembunny.a = inA
       var prev = ''
-      var timeout = 100000
+      var timeout = 600000
       $.each(input[i].split(/\n/), function(idx, inst){
         assembunny.program.push(inst.split(/\s/))
       })
@@ -166,6 +167,7 @@ var day25 = function() {
         assembunny[operation](operatorX, operatorY, operatorZ, operatorW)
         if (operation === 'out') {
           var next = assembunny.output
+          trace += next
           if (prev === '') { // 1st time
             prev = next
           } else if ((prev === '0' && next === '1')
@@ -178,10 +180,10 @@ var day25 = function() {
         }
       }
       if (!timeout) {
-        console.log('timeout')
+        console.log('timeout:', trace)
         break
       }
-      if (inA % 10000 === 0) {
+      if (inA % 1000 === 0) {
         console.log('log', assembunny.output, inA)
       }
     }
